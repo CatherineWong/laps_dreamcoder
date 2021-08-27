@@ -96,7 +96,7 @@ let canvas_to_1Darray c desired =
   let w,h = desired,desired in
   let stride = Cairo.Image.(stride_for_width A8 w) in
   let data = Bigarray.(Array1.create int8_unsigned c_layout (stride * h)) in
-  let surface = Cairo.Image.(create_for_data8 data A8 ~stride w h) in
+  let surface = Cairo.Image.(create_for_data8 data A8 ~stride ~w:w ~h:h) in
   let ctx = Cairo.create surface in
   Cairo.scale ctx ~x:res ~y:res;
   let target = Vgr_cairo.target ctx in
