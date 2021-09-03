@@ -146,9 +146,7 @@ def get_bigram_uses(contextual_grammar, grammar, programs):
 
         # variableParent: this is the penultimate network output
         for p, production in enumerate(grammar.primitives):
-            uses[n_grammars - 2, p] = summary.variableParent.uses.get(
-                production, 0.0
-            )
+            uses[n_grammars - 2, p] = summary.variableParent.uses.get(production, 0.0)
         uses[n_grammars - 2, G - 1] = summary.variableParent.uses.get(Index(0), 0.0)
         bigram_uses.append((list(np.ravel(uses)), uses.shape))
 
@@ -233,9 +231,7 @@ def dreamFromGrammar(g, directory, N=100):
         pretty=False,
         smoothPretty=True,
         resolution=512,
-        filenames=[
-            f"{directory}/{n}_smooth_pretty.png" for n in range(len(programs))
-        ],
+        filenames=[f"{directory}/{n}_smooth_pretty.png" for n in range(len(programs))],
         timeout=1,
     )
     for n, p in enumerate(programs):
@@ -254,10 +250,16 @@ class Flatten(nn.Module):
 class LogoFeatureCNN(nn.Module):
     special = "LOGO"
 
-    def __init__(self, tasks, testingTasks=[], cuda=False, H=64):
+    def __init__(
+        self, tasks, testingTasks=[], cuda=False, H=64, local_prefix_dreams=None
+    ):
         super(LogoFeatureCNN, self).__init__()
 
-        self.sub = prefix_dreams + str(int(time.time()))
+        # Where to store the dream images.
+        if local_prefix_dreams is not None:
+            self.sub = local_prefix_dreams + str(int(time.time()))
+        else:
+            self.sub = prefix_dreams + str(int(time.time()))
 
         self.recomputeTasks = False
 
