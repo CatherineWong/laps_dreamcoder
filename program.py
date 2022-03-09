@@ -666,13 +666,14 @@ class Abstraction(Program):
 class Primitive(Program):
     GLOBALS = {}
 
-    def __init__(self, name, ty, value, function_comment=""):
+    def __init__(self, name, ty, value, function_comment="", alternate_names=[]):
         self.tp = ty
         self.name = name
         self.value = value
         if name not in Primitive.GLOBALS:
             Primitive.GLOBALS[name] = self
         self.function_comment = function_comment
+        self.alternate_names = [name] + alternate_names
 
     @property
     def isPrimitive(self):

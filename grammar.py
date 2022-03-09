@@ -36,20 +36,14 @@ class Grammar(object):
         self.vocab = {
             str(p): i + 1
             for i, p in enumerate(
-                [
-                    p
-                    for (_, _, p) in sorted(
-                        productions, key=lambda prod: str(prod[-1])
-                    )
-                ]
+                [p for (_, _, p) in sorted(productions, key=lambda prod: str(prod[-1]))]
                 + ["VAR"]
             )
         }
         self.str_to_production = {
             str(p): p
             for p in [
-                p
-                for (_, _, p) in sorted(productions, key=lambda prod: str(prod[-1]))
+                p for (_, _, p) in sorted(productions, key=lambda prod: str(prod[-1]))
             ]
         }
         (
@@ -90,9 +84,7 @@ class Grammar(object):
 
     def escape_tokens_string(self, token_string):
         # Deprecated (@CathyWong) -- this is a poor way to do things.
-        for t in sorted(
-            self.original_to_escaped, key=lambda t: len(t), reverse=True
-        ):
+        for t in sorted(self.original_to_escaped, key=lambda t: len(t), reverse=True):
             token_string = token_string.replace(
                 f"{t} ", f"{self.original_to_escaped[t]} "
             )
@@ -257,9 +249,7 @@ class Grammar(object):
                 continue
 
         if self.continuationType == request:
-            terminalIndices = [
-                v.i for t, v, k in variableCandidates if not t.isArrow()
-            ]
+            terminalIndices = [v.i for t, v, k in variableCandidates if not t.isArrow()]
             if terminalIndices:
                 smallestIndex = Index(min(terminalIndices))
                 variableCandidates = [
@@ -348,10 +338,10 @@ class Grammar(object):
         self, context, environment, request, expression, silent=False
     ):
         if request.isArrow():
-            if not isinstance(expression, Abstraction):
-                if not silent:
-                    eprint("Request is an arrow but I got", expression)
-                return context, None
+            # if not isinstance(expression, Abstraction):
+            #     if not silent:
+            #         eprint("Request is an arrow but I got", expression)
+            #     return context, None
             return self.likelihoodSummary(
                 context,
                 [request.arguments[0]] + environment,
@@ -471,13 +461,7 @@ class Grammar(object):
                 )
 
         def ga(
-            costSoFar,
-            f,
-            argumentTypes,
-            _=None,
-            context=None,
-            environment=None,
-            k=None,
+            costSoFar, f, argumentTypes, _=None, context=None, environment=None, k=None,
         ):
             if argumentTypes == []:
                 k(costSoFar, context, f)
@@ -874,8 +858,7 @@ class Grammar(object):
             _, summary = self.likelihoodSummary(context, environment, request, full)
             if summary is None:
                 eprint(
-                    "FATAL: program [ %s ] does not have a likelihood summary."
-                    % full,
+                    "FATAL: program [ %s ] does not have a likelihood summary." % full,
                     "r = ",
                     request,
                     "\n",
@@ -900,9 +883,7 @@ class Grammar(object):
             sk_f, sk_xs = sk.applicationParse()
             full_f, full_xs = full.applicationParse()
             if sk_f.isIndex:
-                assert (
-                    sk_f == full_f
-                ), "sketch and full program don't match on an index"
+                assert sk_f == full_f, "sketch and full program don't match on an index"
                 ft = environment[sk_f.i].apply(context)
             elif sk_f.isInvented or sk_f.isPrimitive:
                 assert (
@@ -1088,10 +1069,7 @@ normalizers = {%s})""" % (
             - sum(
                 count
                 * lse(
-                    [
-                        grammar.expression2likelihood.get(p, NEGATIVEINFINITY)
-                        for p in ps
-                    ]
+                    [grammar.expression2likelihood.get(p, NEGATIVEINFINITY) for p in ps]
                 )
                 for ps, count in self.normalizers.items()
             )
@@ -1099,8 +1077,7 @@ normalizers = {%s})""" % (
 
     def numerator(self, grammar):
         return self.constant + sum(
-            count * grammar.expression2likelihood[p]
-            for p, count in self.uses.items()
+            count * grammar.expression2likelihood[p] for p, count in self.uses.items()
         )
 
     def denominator(self, grammar):
@@ -1145,11 +1122,14 @@ class Uses(object):
         self.actualUses = actualUses
 
     def __str__(self):
-        return "Uses(actualVariables = %f, possibleVariables = %f, actualUses = %s, possibleUses = %s)" % (
-            self.actualVariables,
-            self.possibleVariables,
-            self.actualUses,
-            self.possibleUses,
+        return (
+            "Uses(actualVariables = %f, possibleVariables = %f, actualUses = %s, possibleUses = %s)"
+            % (
+                self.actualVariables,
+                self.possibleVariables,
+                self.actualUses,
+                self.possibleUses,
+            )
         )
 
     def __repr__(self):
@@ -1304,8 +1284,7 @@ class ContextualGrammar:
             self.noParent = LikelihoodSummary()
             self.variableParent = LikelihoodSummary()
             self.library = {
-                e: [LikelihoodSummary() for _ in gs]
-                for e, gs in owner.library.items()
+                e: [LikelihoodSummary() for _ in gs] for e, gs in owner.library.items()
             }
 
         def record(self, parent, parentIndex, actual, possibles, constant):
@@ -1435,9 +1414,7 @@ class ContextualGrammar:
                         return None
                 continue
 
-    def _sample(
-        self, parent, parentIndex, context, environment, request, maximumDepth
-    ):
+    def _sample(self, parent, parentIndex, context, environment, request, maximumDepth):
         if request.isArrow():
             context, body = self._sample(
                 parent,
@@ -1515,9 +1492,7 @@ class ContextualGrammar:
             )
         return u
 
-    def featureVector(
-        self, _=None, requests=None, onlyInventions=True, normalize=True
-    ):
+    def featureVector(self, _=None, requests=None, onlyInventions=True, normalize=True):
         """
         Returns the probabilities licensed by the type system.
         This is like the grammar productions, but with irrelevant junk removed.
@@ -1725,9 +1700,7 @@ def batchLikelihood(jobs):
     programsAndRequests = {(program, request) for program, request, grammar in jobs}
     with timing(f"Calculated {len(programsAndRequests)} likelihood summaries"):
         summary = {
-            (program, request): superGrammar.closedLikelihoodSummary(
-                request, program
-            )
+            (program, request): superGrammar.closedLikelihoodSummary(request, program)
             for program, request in programsAndRequests
         }
     with timing(f"Calculated log likelihoods from summaries"):
@@ -1748,9 +1721,7 @@ def batchLikelihood(jobs):
 if __name__ == "__main__":
     from dreamcoder.domains.arithmetic.arithmeticPrimitives import *
 
-    g = ContextualGrammar.fromGrammar(
-        Grammar.uniform([k0, k1, addition, subtraction])
-    )
+    g = ContextualGrammar.fromGrammar(Grammar.uniform([k0, k1, addition, subtraction]))
     g = g.randomWeights(lambda *a: random.random())
     # p = Program.parse("(lambda (+ 1 $0))")
     request = arrow(tint, tint)
