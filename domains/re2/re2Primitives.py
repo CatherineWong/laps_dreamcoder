@@ -25,7 +25,7 @@ tsubstr = baseType("tsubstr")
 
 ### Regex constants -- handled by constructing regex substrings
 def re2_constants(prim_name):
-    rdot = Primitive("_rdot", tsubstr, ".", alternate_names=["."])
+    rdot = Primitive("_rdot", tsubstr, ".", alternate_names=["'.'"])
     rempty = Primitive("_rempty", tsubstr, "", alternate_names=["empty_string"])
     alpha_chars = [chr(ord("a") + j) for j in range(26)]
 
@@ -37,7 +37,7 @@ def re2_constants(prim_name):
     else:
         chars = [chr(ord(c)) for c in list(chars)]
     char_constants = [
-        Primitive("_%s" % c, tsubstr, c, alternate_names=["%s" % c]) for c in chars
+        Primitive("_%s" % c, tsubstr, c, alternate_names=["'%s'" % c]) for c in chars
     ]
 
     return [rdot, rempty] + char_constants
@@ -45,10 +45,10 @@ def re2_constants(prim_name):
 
 def re2_vowel_consonant_primitives():
     _rvowel = Primitive(
-        "_rvowel", tsubstr, "(a|e|i|o|u)", alternate_names=["(a|e|i|o|u)"]
+        "_rvowel", tsubstr, "(a|e|i|o|u)", alternate_names=["regex_vowel"]
     )
     _rconsonant = Primitive(
-        "_rconsonant", tsubstr, "[^aeiou]", alternate_names=["[^aeiou]"]
+        "_rconsonant", tsubstr, "[^aeiou]", alternate_names=["regex_vowel"]
     )
     return [_rvowel, _rconsonant]
 
@@ -66,15 +66,17 @@ def _rconcat(s1):
     return lambda s2: s1 + s2
 
 
-re2_rnot = Primitive("_rnot", arrow(tsubstr, tsubstr), _rnot, alternate_names=["^"])
+re2_rnot = Primitive(
+    "_rnot", arrow(tsubstr, tsubstr), _rnot, alternate_names=["regex_not"]
+)
 re2_ror = Primitive(
-    "_ror", arrow(tsubstr, tsubstr, tsubstr), _ror, alternate_names=["|"]
+    "_ror", arrow(tsubstr, tsubstr, tsubstr), _ror, alternate_names=["regex_or"]
 )
 re2_rconcat = Primitive(
     "_rconcat",
     arrow(tsubstr, tsubstr, tsubstr),
     _rconcat,
-    alternate_names=["concat_strings"],
+    alternate_names=["regex_concat"],
 )
 
 ### Regex matching.
@@ -129,13 +131,13 @@ re2_rsplit = Primitive(
     "_rsplit",
     arrow(tsubstr, tfullstr, tlist(tsubstr)),
     _rsplit,
-    alternate_names=["split_strings"],
+    alternate_names=["regex_split"],
 )
 re2_rflatten = Primitive(
     "_rflatten",
     arrow(tlist(tsubstr), tfullstr),
     _rflatten,
-    alternate_names=["flatten_string_list"],
+    alternate_names=["regex_flatten"],
 )
 
 ### List operators
@@ -151,23 +153,34 @@ def _rrevcdr(l):
     return l[:-1]
 
 
-re2_if = Primitive("if", arrow(tbool, t0, t0, t0), _if, alternate_names=["if"])
+re2_if = Primitive("if", arrow(tbool, t0, t0, t0), _if, alternate_names=["regex_if"])
 re2_cons = Primitive(
-    "cons", arrow(t0, tlist(t0), tlist(t0)), _cons, alternate_names=["cons"]
+    "cons", arrow(t0, tlist(t0), tlist(t0)), _cons, alternate_names=["regex_cons"]
 )
-re2_car = Primitive("car", arrow(tlist(t0), t0), _car, alternate_names=["car"])
-re2_cdr = Primitive("cdr", arrow(tlist(t0), tlist(t0)), _cdr, alternate_names=["cdr"])
+re2_car = Primitive("car", arrow(tlist(t0), t0), _car, alternate_names=["regex_car"])
+re2_cdr = Primitive(
+    "cdr", arrow(tlist(t0), tlist(t0)), _cdr, alternate_names=["regex_cdr"]
+)
 re2_map = Primitive(
-    "map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map, alternate_names=["map"]
+    "map",
+    arrow(arrow(t0, t1), tlist(t0), tlist(t1)),
+    _map,
+    alternate_names=["regex_map"],
 )
 re2_rtail = Primitive(
-    "_rtail", arrow(tlist(tsubstr), tsubstr), _rtail, alternate_names=["tail"]
+    "_rtail", arrow(tlist(tsubstr), tsubstr), _rtail, alternate_names=["regex_tail"]
 )
 re2_rappend = Primitive(
-    "_rappend", arrow(t0, tlist(t0), tlist(t0)), _rappend, alternate_names=["append"]
+    "_rappend",
+    arrow(t0, tlist(t0), tlist(t0)),
+    _rappend,
+    alternate_names=["regex_append"],
 )
 re2_rrevcdr = Primitive(
-    "_rrevcdr", arrow(tlist(t0), tlist(t0)), _rrevcdr, alternate_names=["reverse_cdr"]
+    "_rrevcdr",
+    arrow(tlist(t0), tlist(t0)),
+    _rrevcdr,
+    alternate_names=["regex_reverse_cdr"],
 )
 
 
