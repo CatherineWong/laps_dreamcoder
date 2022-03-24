@@ -57,7 +57,7 @@ def sort_objs(obj_list):
 def sort_and_dedup_obj_list(obj_list):
     seen = set()
     deduped = []
-    for o in obj_list[-1]:
+    for o in obj_list:
         if o["id"] not in seen:
             seen.add(o["id"])
             deduped.append(o)

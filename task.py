@@ -110,9 +110,6 @@ class Task(object):
                     if timeout is not None:
                         signal.signal(signal.SIGVTALRM, lambda *_: None)
                         signal.setitimer(signal.ITIMER_VIRTUAL, 0)
-                    import pdb
-
-                    pdb.set_trace()
                     return False
 
             return True
