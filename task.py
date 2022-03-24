@@ -13,37 +13,41 @@ EVALUATIONTABLE = {}
 
 class Task(object):
     def __init__(self, name, request, examples, features=None, cache=False):
-        '''request: the type of this task
+        """request: the type of this task
         examples: list of tuples of (input, output). input should be a tuple, with one entry for each argument
         cache: should program evaluations be cached?
-        features: list of floats.'''
+        features: list of floats."""
         self.cache = cache
         self.features = features
         self.request = request
         self.name = name
-        self.nearest_name = None # Nearest task for kNN featurization. 
+        self.nearest_name = None  # Nearest task for kNN featurization.
         self.examples = examples
         if len(self.examples) > 0:
-            assert all(len(xs) == len(examples[0][0])
-                       for xs, _ in examples), \
+            assert all(len(xs) == len(examples[0][0]) for xs, _ in examples), (
                 "(for task %s) FATAL: Number of arguments varies." % name
+            )
         self.use_supervised = False
-        
+
     def __str__(self):
         if self.supervision is None:
             return self.name
         else:
-            return self.name + " (%s)"%self.supervision
+            return self.name + " (%s)" % self.supervision
 
     def __repr__(self):
-        return "Task(name={self.name}, request={self.request}, examples={self.examples}"\
-            .format(self=self)
+        return "Task(name={self.name}, request={self.request}, examples={self.examples}".format(
+            self=self
+        )
 
-    def __eq__(self, o): return self.name == o.name
+    def __eq__(self, o):
+        return self.name == o.name
 
-    def __ne__(self, o): return not (self == o)
+    def __ne__(self, o):
+        return not (self == o)
 
-    def __hash__(self): return hash(self.name)
+    def __hash__(self):
+        return hash(self.name)
 
     def describe(self):
         description = ["%s : %s" % (self.name, self.request)]
@@ -61,18 +65,23 @@ class Task(object):
 
     @property
     def supervision(self):
-        if not hasattr(self, 'supervisedSolution'): return None
+        if not hasattr(self, "supervisedSolution"):
+            return None
         return self.supervisedSolution
-    
+
     @property
     def add_as_supervised(self):
-        if not hasattr(self, 'use_supervised'): return False
+        if not hasattr(self, "use_supervised"):
+            return False
         else:
             return self.use_supervised
 
     def check(self, e, timeout=None):
         if timeout is not None:
-            def timeoutCallBack(_1, _2): raise EvaluationTimeout()
+
+            def timeoutCallBack(_1, _2):
+                raise EvaluationTimeout()
+
         try:
             signal.signal(signal.SIGVTALRM, timeoutCallBack)
             signal.setitimer(signal.ITIMER_VIRTUAL, timeout)
@@ -101,12 +110,15 @@ class Task(object):
                     if timeout is not None:
                         signal.signal(signal.SIGVTALRM, lambda *_: None)
                         signal.setitimer(signal.ITIMER_VIRTUAL, 0)
+                    import pdb
+
+                    pdb.set_trace()
                     return False
 
             return True
         # except e:
-            # eprint(e)
-            # assert(False)
+        # eprint(e)
+        # assert(False)
         except EvaluationTimeout:
             eprint("Timed out while evaluating", e)
             return False
@@ -124,33 +136,50 @@ class Task(object):
     @staticmethod
     def featureMeanAndStandardDeviation(tasks):
         dimension = len(tasks[0].features)
-        averages = [sum(t.features[j] for t in tasks) / float(len(tasks))
-                    for j in range(dimension)]
-        variances = [sum((t.features[j] -
-                          averages[j])**2 for t in tasks) /
-                     float(len(tasks)) for j in range(dimension)]
-        standardDeviations = [v**0.5 for v in variances]
+        averages = [
+            sum(t.features[j] for t in tasks) / float(len(tasks))
+            for j in range(dimension)
+        ]
+        variances = [
+            sum((t.features[j] - averages[j]) ** 2 for t in tasks) / float(len(tasks))
+            for j in range(dimension)
+        ]
+        standardDeviations = [v ** 0.5 for v in variances]
         for j, s in enumerate(standardDeviations):
-            if s == 0.:
-                eprint(
-                    "WARNING: Feature %d is always %f" %
-                    (j + 1, averages[j]))
+            if s == 0.0:
+                eprint("WARNING: Feature %d is always %f" % (j + 1, averages[j]))
         return averages, standardDeviations
 
     def as_json_dict(self):
         return {
             "name": self.name,
             "request": str(self.request),
-            "examples": [{"inputs": x, "output": y} for x, y in self.examples]
+            "examples": [{"inputs": x, "output": y} for x, y in self.examples],
         }
 
 
 class DifferentiableTask(Task):
-
-    def __init__(self, name, request, examples, _=None,
-                 features=None, BIC=1., loss=None, likelihoodThreshold=None,
-                 steps=50, restarts=300, lr=0.5, decay=0.5, grow=1.2, actualParameters=None,
-                 temperature=1., maxParameters=None, clipLoss=None, clipOutput=None):
+    def __init__(
+        self,
+        name,
+        request,
+        examples,
+        _=None,
+        features=None,
+        BIC=1.0,
+        loss=None,
+        likelihoodThreshold=None,
+        steps=50,
+        restarts=300,
+        lr=0.5,
+        decay=0.5,
+        grow=1.2,
+        actualParameters=None,
+        temperature=1.0,
+        maxParameters=None,
+        clipLoss=None,
+        clipOutput=None,
+    ):
         assert loss is not None
         self.temperature = temperature
         self.actualParameters = actualParameters
@@ -159,40 +188,47 @@ class DifferentiableTask(Task):
         self.BIC = BIC
         self.likelihoodThreshold = likelihoodThreshold
 
-        arguments = {"parameterPenalty": BIC * math.log(len(examples)),
-                     "temperature": temperature,
-                     "steps": steps, "restarts": restarts, "lr": lr, "decay": decay, "grow": grow,
-                     "maxParameters": maxParameters,
-                     "lossThreshold": -likelihoodThreshold}
-        if clipLoss is not None: arguments['clipLoss'] = float(clipLoss)
-        if clipOutput is not None: arguments['clipOutput'] = float(clipOutput)
-        if actualParameters is not None: arguments['actualParameters'] = int(actualParameters)
-        
-        self.specialTask = ("differentiable",
-                            arguments)
+        arguments = {
+            "parameterPenalty": BIC * math.log(len(examples)),
+            "temperature": temperature,
+            "steps": steps,
+            "restarts": restarts,
+            "lr": lr,
+            "decay": decay,
+            "grow": grow,
+            "maxParameters": maxParameters,
+            "lossThreshold": -likelihoodThreshold,
+        }
+        if clipLoss is not None:
+            arguments["clipLoss"] = float(clipLoss)
+        if clipOutput is not None:
+            arguments["clipOutput"] = float(clipOutput)
+        if actualParameters is not None:
+            arguments["actualParameters"] = int(actualParameters)
 
-        super(
-            DifferentiableTask,
-            self).__init__(
-            name,
-            request,
-            examples,
-            features,
-            cache=False)
+        self.specialTask = ("differentiable", arguments)
+
+        super(DifferentiableTask, self).__init__(
+            name, request, examples, features, cache=False
+        )
 
     def logLikelihood(self, e, timeout=None):
-        assert timeout is None, "timeout not implemented for differentiable tasks, but not for any good reason."
+        assert (
+            timeout is None
+        ), "timeout not implemented for differentiable tasks, but not for any good reason."
         e, parameters = PlaceholderVisitor.execute(e)
-        if self.maxParameters is not None and len(
-                parameters) > self.maxParameters:
+        if self.maxParameters is not None and len(parameters) > self.maxParameters:
             return NEGATIVEINFINITY
-        if self.actualParameters is not None and len(
-                parameters) > self.actualParameters:
+        if (
+            self.actualParameters is not None
+            and len(parameters) > self.actualParameters
+        ):
             return NEGATIVEINFINITY
         f = e.evaluate([])
 
-        loss = sum(self.loss(self.predict(f, xs), y)
-                   for xs, y in self.examples) / float(len(self.examples))
+        loss = sum(
+            self.loss(self.predict(f, xs), y) for xs, y in self.examples
+        ) / float(len(self.examples))
         if isinstance(loss, DN):
             try:
                 loss = loss.restartingOptimize(
@@ -202,7 +238,8 @@ class DifferentiableTask(Task):
                     decay=self.specialTask[1]["decay"],
                     grow=self.specialTask[1]["grow"],
                     attempts=self.specialTask[1]["restarts"],
-                    update=None)
+                    update=None,
+                )
             except InvalidLoss:
                 loss = POSITIVEINFINITY
 
@@ -228,23 +265,27 @@ def l1loss(prediction, target):
 
 
 class PlaceholderVisitor(object):
-    def __init__(self): self.parameters = []
+    def __init__(self):
+        self.parameters = []
 
     def primitive(self, e):
-        if e.name == 'REAL':
+        if e.name == "REAL":
             placeholder = Placeholder.named("REAL_", random.random())
             self.parameters.append(placeholder)
             return Primitive(e.name, e.tp, placeholder)
         return e
 
-    def invented(self, e): return e.body.visit(self)
+    def invented(self, e):
+        return e.body.visit(self)
 
-    def abstraction(self, e): return Abstraction(e.body.visit(self))
+    def abstraction(self, e):
+        return Abstraction(e.body.visit(self))
 
     def application(self, e):
         return Application(e.f.visit(self), e.x.visit(self))
 
-    def index(self, e): return e
+    def index(self, e):
+        return e
 
     @staticmethod
     def execute(e):

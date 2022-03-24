@@ -338,10 +338,10 @@ class Grammar(object):
         self, context, environment, request, expression, silent=False
     ):
         if request.isArrow():
-            # if not isinstance(expression, Abstraction):
-            #     if not silent:
-            #         eprint("Request is an arrow but I got", expression)
-            #     return context, None
+            if not isinstance(expression, Abstraction):
+                if not silent:
+                    eprint("Request is an arrow but I got", expression)
+                return context, None
             return self.likelihoodSummary(
                 context,
                 [request.arguments[0]] + environment,

@@ -171,7 +171,7 @@ class Program(object):
         return False
 
     @staticmethod
-    def parse(s):
+    def parse(s, allow_unknown_primitives=False):
         s = parseSExpression(s)
 
         def p(e):
@@ -195,6 +195,10 @@ class Program(object):
                 return FragmentVariable.single
             if e == "<HOLE>":
                 return Hole.single
+            if allow_unknown_primitives:
+                if e not in Primitive.UNKNOWN_NAMES:
+                    Primitive.UNKNOWN_NAMES[e] = Primitive(e, None, "")
+                return Primitive.UNKNOWN_NAMES[e]
             raise ParseFailure((s, e))
 
         return p(s)
@@ -665,6 +669,7 @@ class Abstraction(Program):
 
 class Primitive(Program):
     GLOBALS = {}
+    UNKNOWN_NAMES = {}
 
     def __init__(self, name, ty, value, function_comment="", alternate_names=[]):
         self.tp = ty
