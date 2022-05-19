@@ -1165,17 +1165,25 @@ class RecognitionModel(nn.Module):
         def make_entry(e):
             if e.tokens is None:
                 e.tokens = e.program.left_order_tokens(show_vars=False)
-            return FrontierEntry(
-                program=self.grammar.closedLikelihoodSummary(
-                    frontier.task.request, e.program
-                ),
-                logLikelihood=e.logLikelihood,
-                logPrior=e.logPrior,
-                tokens=e.tokens,
-                test=e.program,
-            )
+            try:
+                return FrontierEntry(
+                    program=self.grammar.closedLikelihoodSummary(
+                        frontier.task.request, e.program
+                    ),
+                    logLikelihood=e.logLikelihood,
+                    logPrior=self.grammar.logLikelihood(
+                        frontier.task.request, e.program
+                    ),
+                    tokens=e.tokens,
+                    test=e.program,
+                )
+            except:
+                return None
 
-        return Frontier([make_entry(e) for e in frontier], task=frontier.task)
+        frontier_summaries = [make_entry(e) for e in frontier]
+        return Frontier(
+            [s for s in frontier_summaries if s is not None], task=frontier.task
+        )
 
     def pairwise_cosine_similarity(self, a, b, eps=1e-8):
         """
@@ -1246,6 +1254,7 @@ class RecognitionModel(nn.Module):
         auxLoss=False,
         vectorized=True,
         epochs=None,
+        generateNewHelmholtz=True,
     ):
         """
         helmholtzRatio: What fraction of the training data should be forward samples from the generative model?
@@ -1287,7 +1296,7 @@ class RecognitionModel(nn.Module):
 
         # This determines whether we have pre-enumerated a set of helmholtzFrontiers: if we have not,
         # we will need to sample them during the training loop itself.
-        randomHelmholtz = len(helmholtzFrontiers) < 2
+        randomHelmholtz = len(helmholtzFrontiers) < 1
         if randomHelmholtz:
             print(
                 "No pre-enumerated helmholtzFrontiers: we will sample randomly during the training loop."
@@ -1404,17 +1413,18 @@ class RecognitionModel(nn.Module):
                 and self.featureExtractor.parallelTaskOfProgram
                 else 1
             )
-            if updateCPUs > 1:
-                eprint(
-                    "Updating Helmholtz tasks with",
-                    updateCPUs,
-                    "CPUs",
-                    "while using",
-                    getThisMemoryUsage(),
-                    "memory",
-                )
+            # if updateCPUs > 1:
+            #     eprint(
+            #         "Updating Helmholtz tasks with",
+            #         updateCPUs,
+            #         "CPUs",
+            #         "while using",
+            #         getThisMemoryUsage(),
+            #         "memory",
+            #     )
 
-            if randomHelmholtz or switchToRandom:
+            if generateNewHelmholtz and randomHelmholtz or switchToRandom:
+                print("Sampling new helmholtz frontiers during training.")
                 newFrontiers = self.sampleManyHelmholtz(requests, helmholtzBatch, CPUs)
                 newEntries = []
                 for f in newFrontiers:
@@ -1547,7 +1557,10 @@ class RecognitionModel(nn.Module):
                 # Randomly decide whether to sample from the generative model
                 dreaming = random.random() < helmholtzRatio
                 if dreaming:
-                    frontier = getHelmholtz()
+                    try:
+                        frontier = getHelmholtz()
+                    except:
+                        continue  # Just use the training frontier.
                 self.zero_grad()
                 loss, classificationLoss = (
                     self.frontierBiasOptimal(
