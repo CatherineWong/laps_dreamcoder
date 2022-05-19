@@ -1181,9 +1181,11 @@ class RecognitionModel(nn.Module):
                 return None
 
         frontier_summaries = [make_entry(e) for e in frontier]
-        return Frontier(
-            [s for s in frontier_summaries if s is not None], task=frontier.task
-        )
+        frontier_summaries = [s for s in frontier_summaries if s is not None]
+        if len(frontier_summaries) < 0:
+            return None
+        else:
+            return Frontier(frontier_summaries, task=frontier.task)
 
     def pairwise_cosine_similarity(self, a, b, eps=1e-8):
         """
@@ -1498,10 +1500,13 @@ class RecognitionModel(nn.Module):
         # We replace each program in the frontier with its likelihoodSummary
         # This is because calculating likelihood summaries requires juggling types
         # And type stuff is expensive!
-        frontiers = [
-            self.replaceProgramsWithLikelihoodSummaries(f).normalize()
-            for f in frontiers
-        ]
+        initial_num_frontiers = len(frontiers)
+        frontiers = [self.replaceProgramsWithLikelihoodSummaries(f) for f in frontiers]
+        frontiers = [f for f in frontiers if f is not None]
+        frontiers = [f.normalize() for f in frontiers]
+        print(
+            f"Attempted frontier likelihood normalization. Initial frontiers: {initial_num_frontiers}. Now: {len(frontiers)}"
+        )
 
         feature_extractor_names = [
             str(encoder.__class__.__name__)
