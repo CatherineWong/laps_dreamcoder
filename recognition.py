@@ -1732,6 +1732,7 @@ class RecognitionModel(nn.Module):
         evaluationTimeout=None,
         max_mem_per_enumeration_thread=1000000,
         solver_directory=".",  # Default solver directory is top level in original DreamCoder.
+        likelihood_model=INDUCTIVE_EXAMPLES_LIKELIHOOD_MODEL,
     ):
         with timing("Evaluated recognition model"):
             grammars = {task: self.grammarOfTask(task) for task in tasks}
@@ -1754,6 +1755,7 @@ class RecognitionModel(nn.Module):
             unigramGrammar=self.generativeModel,
             max_mem_per_enumeration_thread=max_mem_per_enumeration_thread,
             solver_directory=solver_directory,
+            likelihood_model_string=likelihood_model,
         )
 
 
