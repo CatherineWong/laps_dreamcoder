@@ -56,6 +56,25 @@ class Frontier(object):
             ],
         }
 
+    @staticmethod
+    def from_json(task, grammar, json_frontier):
+        from dreamcoder.program import Program
+
+        return Frontier(
+            [
+                FrontierEntry(
+                    program=p,
+                    logLikelihood=e["logLikelihood"],
+                    tokens=None,
+                    # logPrior=grammar.logLikelihood(task.request, p),
+                    logPrior=0.0,
+                )
+                for e in json_frontier["programs"]
+                for p in [Program.parse(e["program"])]
+            ],
+            task=task,
+        )
+
     DUMMYFRONTIERCOUNTER = 0
 
     @staticmethod

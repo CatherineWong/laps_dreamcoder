@@ -147,12 +147,20 @@ class Task(object):
                 eprint("WARNING: Feature %d is always %f" % (j + 1, averages[j]))
         return averages, standardDeviations
 
-    def as_json_dict(self):
+    def json(self):
         return {
             "name": self.name,
             "request": str(self.request),
             "examples": [{"inputs": x, "output": y} for x, y in self.examples],
         }
+
+    @staticmethod
+    def from_json(json):
+        return Task(
+            name=json["name"],
+            request=json["request"],
+            examples=[(e["inputs"], e["output"]) for e in json["examples"]],
+        )
 
 
 class DifferentiableTask(Task):
