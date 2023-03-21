@@ -561,6 +561,7 @@ class Grammar(object):
                         (summary, summary.toUses()),
                         logPrior=summary.logLikelihood(self),
                         logLikelihood=e.logLikelihood,
+                        tokens=e.program.left_order_tokens(),
                     )
                     for e in f
                     for summary in [
