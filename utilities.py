@@ -25,13 +25,13 @@ PUNCTUATION_TO_STRING = {
  "3" : "THREE",
  "4" : "FOUR",
  "5" : "FIVE",
- "6" : "SIX", 
+ "6" : "SIX",
  "7" : "SEVEN",
- "8" : "EIGHT", 
+ "8" : "EIGHT",
  "9" : "NINE",
  "+" : "PLUS",
- "-" : "MINUS", 
- "*" : "MULT", 
+ "-" : "MINUS",
+ "*" : "MULT",
  "\\" : "DIV"
 }
 DEFAULT_OUTPUT_DIRECTORY = "experimentOutputs"
@@ -39,7 +39,7 @@ DEFAULT_OUTPUT_DIRECTORY = "experimentOutputs"
 def limit_virtual_memory_with_psutil_if_possible(process, max_mem_per_enumeration_thread):
     # Limits the amount of virtual memory if possible. This is only avaialble on Linux.
     if 'linux' in sys.platform:
-        print(f"Limiting virtual memory to: {max_mem_per_enumeration_thread}")
+        # print(f"Limiting virtual memory to: {max_mem_per_enumeration_thread}")
         psutil.Process(process.pid).rlimit(
         psutil.RLIMIT_AS, (max_mem_per_enumeration_thread, max_mem_per_enumeration_thread))
 
@@ -75,7 +75,7 @@ def convert_iterations_to_training_task_epochs(args, train_tasks):
     if use_epochs and args["taskBatchSize"] is not None:
         print("Using iterations as epochs")
         intended_epochs = args["iterations"]
-        args["iterations"] *= int(len(train_tasks) / args["taskBatchSize"]) 
+        args["iterations"] *= int(len(train_tasks) / args["taskBatchSize"])
         print(f"Now running for n={intended_epochs} epochs, which with {len(train_tasks)} training tasks is n={args['iterations']} iterations.")
 
 def pop_all_domain_specific_args(args_dict, iterator_fn):
@@ -101,12 +101,12 @@ class Thunk(object):
     # A class for lazy evaluation
     def __init__(self, thing):
         self.thing = thing
-        self.evaluated = False 
+        self.evaluated = False
 
     def force(self):
         if self.evaluated:
             return self.thing
-        else: 
+        else:
             self.thing = self.thing()
             self.evaluated = True
             return self.thing
@@ -136,7 +136,7 @@ def curry(fn):
     """Curries a function. Hacky way to return a curried version of functions with arbitrary #s of args. """
     def make_curry_fn(signature):
         """Redefines a currying function with the appropriate arguments. Hacky."""
-        tmp_curry = 'def tmp_curry(f): return ' 
+        tmp_curry = 'def tmp_curry(f): return '
         tmp_curry += " ".join(['lambda %s: ' % argname for argname in signature.parameters])
         tmp_curry += 'f'
         tmp_curry += str(signature)
@@ -168,7 +168,7 @@ class Curried:
 
     def __repr__(self):
         return str(self)
-            
+
 
 def hashable(v):
     """Determine whether `v` can be hashed."""
@@ -206,8 +206,8 @@ def growImage(i, iterations=2):
         ip[foreground] = c
         i = ip
     return ip
-                        
-                
+
+
 
 def summaryStatistics(n, times):
     if len(times) == 0:
@@ -248,7 +248,7 @@ def parallelMap(numberOfCPUs, f, *xs, chunksize=None, maxtasksperchild=None, mem
         if correctedCPUs < numberOfCPUs:
             eprint("In order to not use all of the memory on the machine (%f gb), we are limiting this parallel map to only use %d CPUs"%(howManyGigabytesOfMemory(),correctedCPUs))
         numberOfCPUs = correctedCPUs
-        
+
 
     if numberOfCPUs == 1:
         return list(map(f, *xs))
@@ -257,7 +257,7 @@ def parallelMap(numberOfCPUs, f, *xs, chunksize=None, maxtasksperchild=None, mem
     for x in xs:
         assert len(x) == n
 
-    assert PARALLELMAPDATA is None    
+    assert PARALLELMAPDATA is None
     PARALLELMAPDATA = (f, xs)
     assert PARALLELBASESEED is None
     if seedRandom:
@@ -439,7 +439,7 @@ def jsonBinaryInvoke(binary, message):
         raise e
     return response
 
-    
+
 class CompiledTimeout(Exception):
     pass
 
@@ -595,7 +595,7 @@ def sampleDistribution(d):
             else:
                 return t[1:]
         u += p
-        
+
     assert False
 
 
@@ -776,7 +776,7 @@ def runWithTimeout(k, timeout):
         raise RunWithTimeout()
     signal.signal(signal.SIGPROF, timeoutCallBack)
     signal.setitimer(signal.ITIMER_PROF, timeout)
-    
+
     try:
         result = k()
         signal.signal(signal.SIGPROF, lambda *_:None)
@@ -835,7 +835,7 @@ class UnionFind:
                 k = k.leader
             self.leader = k
             return k
-            
+
     def __init__(self):
         # Map from keys to classes
         self.classes = {}
@@ -857,8 +857,8 @@ class UnionFind:
     def otherMembers(self,x):
         k = self.classes[x].chase()
         self.classes[x] = k
-        return k.members        
-        
+        return k.members
+
 
 def substringOccurrences(ss, s):
     return sum(s[i:].startswith(ss) for i in range(len(s)))
@@ -987,7 +987,7 @@ def parseSExpression(s):
 def diffuseImagesOutward(imageCoordinates, labelCoordinates, d,
 			 maximumRadius = 2.5, minimumRadius = 1.5):
     import numpy as np
-    
+
     n = imageCoordinates.shape[0]
     #d = (np.random.rand(n,2)*2 - 1)*(maximumRadius/2 + minimumRadius/2)
 

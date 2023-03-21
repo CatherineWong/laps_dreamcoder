@@ -353,7 +353,7 @@ def solveForTask_ocaml(
     message = {
         "DSL": g.json(),
         "tasks": [taskMessage(t) for t in tasks],
-        "programTimeout": evaluationTimeout,
+        "programTimeout": float(evaluationTimeout),
         "nc": CPUs,
         "timeout": timeout,
         "lowerBound": lowerBound,
