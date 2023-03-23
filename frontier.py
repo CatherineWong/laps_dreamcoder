@@ -66,8 +66,7 @@ class Frontier(object):
                     program=p,
                     logLikelihood=e["logLikelihood"],
                     tokens=None,
-                    # logPrior=grammar.logLikelihood(task.request, p),
-                    logPrior=0.0,
+                    logPrior=grammar.logLikelihood(task.request, p),
                 )
                 for e in json_frontier["programs"]
                 for p in [Program.parse(e["program"])]
