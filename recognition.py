@@ -1182,7 +1182,7 @@ class RecognitionModel(nn.Module):
 
         frontier_summaries = [make_entry(e) for e in frontier]
         frontier_summaries = [s for s in frontier_summaries if s is not None]
-        if len(frontier_summaries) < 0:
+        if len(frontier_summaries) == 0:
             return None
         else:
             return Frontier(frontier_summaries, task=frontier.task)
