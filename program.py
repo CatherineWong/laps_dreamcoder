@@ -1250,12 +1250,6 @@ class EtaLongVisitor(object):
         else:
             assert False, "Not in beta long form: %s" % e
 
-        for i,x in enumerate(xs):
-            self.context.unify(
-                ft.functionArguments()[i],
-                x.infer().instantiateMutable(self.context))
-            ft = ft.applyMutable(self.context)
-
         self.context.unify(request, ft.returns())
         ft = ft.applyMutable(self.context)
 
