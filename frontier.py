@@ -12,6 +12,7 @@ class FrontierEntry(object):
         logPosterior=None,
         tokens=None,
         test=None,
+        origin=None,
     ):
         self.logPosterior = (
             logPrior + logLikelihood if logPosterior is None else logPosterior
@@ -25,6 +26,7 @@ class FrontierEntry(object):
             else:
                 tokens = self.program.left_order_tokens(show_vars=False)
         self.tokens = tokens
+        self.origin = origin
 
     def __repr__(self):
         return "FrontierEntry(program={self.program}, logPrior={self.logPrior}, logLikelihood={self.logLikelihood}".format(
@@ -51,7 +53,7 @@ class Frontier(object):
             "request": self.task.request.json(),
             "task": str(self.task),
             "programs": [
-                {"program": str(e.program), "logLikelihood": e.logLikelihood}
+                {"program": str(e.program), "logLikelihood": e.logLikelihood, "origin": e.origin}
                 for e in self
             ],
         }
@@ -67,6 +69,7 @@ class Frontier(object):
                     logLikelihood=e["logLikelihood"],
                     tokens=None,
                     logPrior=grammar.logLikelihood(task.request, p),
+                    origin=e.get("origin"),
                 )
                 for e in json_frontier["programs"]
                 for p in [Program.parse(e["program"])]
