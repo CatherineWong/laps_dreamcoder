@@ -171,7 +171,7 @@ class Program(object):
         return False
 
     @staticmethod
-    def parse(s, allow_unknown_primitives=False):
+    def parse(s, magic_float_typing=False, allow_unknown_primitives=False):
         s = parseSExpression(s)
 
         def p(e):
@@ -189,6 +189,7 @@ class Program(object):
             assert isinstance(e, str)
             if e[0] == "$":
                 return Index(int(e[1:]))
+
             if e in Primitive.GLOBALS:
                 return Primitive.GLOBALS[e]
             if e == "??" or e == "?":
@@ -196,17 +197,18 @@ class Program(object):
             if e == "<HOLE>":
                 return Hole.single
             # Magic typing for floats.
-            try:
-                float_e = float(e)
-                Primitive(
-                    f"{float_e:g}", baseType("tfloat"), float_e, override_globals=True
-                )
-                return Primitive.GLOBALS[f"{float_e:g}"]
-            except:
-                if allow_unknown_primitives:
-                    if e not in Primitive.UNKNOWN_NAMES:
-                        Primitive.UNKNOWN_NAMES[e] = Primitive(e, None, "")
-                    return Primitive.UNKNOWN_NAMES[e]
+            if magic_float_typing:
+                try:
+                    float_e = float(e)
+                    Primitive(
+                        f"{float_e:g}", baseType("tfloat"), float_e, override_globals=True
+                    )
+                    return Primitive.GLOBALS[f"{float_e:g}"]
+                except:
+                    if allow_unknown_primitives:
+                        if e not in Primitive.UNKNOWN_NAMES:
+                            Primitive.UNKNOWN_NAMES[e] = Primitive(e, None, "")
+                        return Primitive.UNKNOWN_NAMES[e]
             raise ParseFailure((s, e))
 
         return p(s)
