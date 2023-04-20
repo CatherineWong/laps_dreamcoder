@@ -205,10 +205,11 @@ class Program(object):
                     )
                     return Primitive.GLOBALS[f"{float_e:g}"]
                 except:
-                    if allow_unknown_primitives:
-                        if e not in Primitive.UNKNOWN_NAMES:
-                            Primitive.UNKNOWN_NAMES[e] = Primitive(e, None, "")
-                        return Primitive.UNKNOWN_NAMES[e]
+                    pass
+            if allow_unknown_primitives:
+                if e not in Primitive.UNKNOWN_NAMES:
+                    Primitive.UNKNOWN_NAMES[e] = Primitive(e, None, "")
+                return Primitive.UNKNOWN_NAMES[e]
             raise ParseFailure((s, e))
 
         return p(s)
