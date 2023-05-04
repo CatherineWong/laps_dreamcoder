@@ -285,6 +285,7 @@ class Frontier(object):
                         program=e1.program,
                         logLikelihood=(e1.logLikelihood + e2.logLikelihood) / 2,
                         logPrior=e1.logPrior,
+                        origin=e1.origin,
                     )
             union.append(e1)
         for p, e2 in y.items():

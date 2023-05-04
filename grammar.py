@@ -533,6 +533,7 @@ class Grammar(object):
                     e.program,
                     logPrior=self.logLikelihood(frontier.task.request, e.program),
                     logLikelihood=e.logLikelihood,
+                    origin=e.origin,
                 )
                 for e in frontier
             ],
