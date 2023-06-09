@@ -9,6 +9,7 @@
 *.p
 *.pyc
 __pycache__
+__pycache__/
 _build
 *.cost
 container.img
